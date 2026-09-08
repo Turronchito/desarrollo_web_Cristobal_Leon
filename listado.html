@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Avistamientos</title>
+  <link rel="stylesheet" href="./css/stylesListado.css">
+</head>
+<body>
+  <div class="encasillado">
+    <header>
+    <h2>Avistamientos</h2>
+    </header>
+
+    <div>
+      <select id="filtro">
+        <option value="">Tipos</option>
+        <option value="Rapaz">Rapaz</option>
+        <option value="Passeriforme">Passeriforme</option>
+      </select>
+      
+      <select id="orden">
+        <option value="time">Fecha</option>
+        <option value="place">Lugar</option>
+      </select>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>Ave</th><th>Tipo</th><th>Fecha</th><th>Lugar</th></tr>
+      </thead>
+      <tbody id="tabla"></tbody>
+    </table>
+
+    <div class="paginacion">
+      <button id="prev">Anterior</button>
+      <span id="p-info">1</span>
+      <button id="next">Siguiente</button>
+    </div>
+    
+    <a href="inicio.html">
+        <button id="start-btn" type="button">Volver</button>
+    </a>
+  </div>
+  
+  <script src="./js/listado.js"></script>
+</body>
+</html>

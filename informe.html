@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Registro de Aves</title>
+    <link rel="stylesheet" type="text/css" href="./css/stylesInforme.css">
+</head>
+<body>
+    <header>
+        <h1>Informe de avistamientos</h1>
+    </header>
+    <div class="main-container">
+        <div id="val-box" hidden>
+            <h2 id="val-msg"></h2>
+            <ul id="val-list"></ul>
+        </div>
+        <form name="myForm" method="post" enctype="multipart/form-data">
+
+            <label for="BirdName">Nombre de Ave</label>
+            <input type="text" name="BirdName" id="BirdName" minlength="4" required><br>
+            
+            <label for="BirdType">Tipo de Ave</label>
+            <input type="text" name="BirdType" id="BirdType" minlength="4" required><br>
+
+            <label for="place">Lugar</label>
+            <input type="text" name="place" id="place" minlength="4" required><br>
+
+            <label for="time">Fecha y Hora</label>
+            <input type="datetime-local" name="time" id="time" minlength="4" required><br>
+
+            <div id="imagenes">
+                <label for="Image">Imagen del Ave</label>
+                <div>
+                    <input type="file" name="Image" id="Image" multiple accept="image/*,.pdf" required><br>
+                    <button type="button" id="plus-btn">+</button>
+                </div>
+            </div>
+            
+            <button id="submit-btn" type="button">Enviar</button>
+            <a href="inicio.html">
+            <button id="start-btn" type="button">Volver</button>
+            </a>
+        </form>
+    </div>
+    <script src="./js/informe.js"></script>
+</body>
+</html>

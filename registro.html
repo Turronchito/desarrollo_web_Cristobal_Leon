@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Registro de Aves</title>
+    <link rel="stylesheet" type="text/css" href="./css/stylesRegistro.css">
+</head>
+<body>
+    <header>
+        <h1>Registro volunatrio</h1>
+    </header>
+    <div class="main-container">
+        <div id="val-box" hidden>
+            <h2 id="val-msg"></h2>
+            <ul id="val-list"></ul>
+        </div>
+        <form name="myForm" method="post" enctype="multipart/form-data">
+            <label for="nombre">Nombre</label>
+            <input type="name" name="nombre" id="nombre" minlength="15" required><br>
+
+            <label for="rut">Rut</label>
+            <input type="rut" name="rut" id="rut" minlength="8" required><br>
+
+            <label for="email">Email</label>
+            <input type="email" name="email" id="email" minlength="15" required><br>
+
+            <label for="phone">Numero de teléfono</label>
+            <input type="phone" name="phone" id="phone" minlength="8" required><br>
+
+            <label for="region">Región</label>
+            <select name="region" id="region" required>
+                <option value="">Seleccione una Región</option>
+            </select><br>
+
+            <label for="comuna">Comuna</label>
+            <select name="comuna" id="comuna" required>
+                <option value="">Seleccione una Comuna</option>
+            </select><br>
+            
+            <button id="submit-btn" type="button">Enviar</button>
+            <a href="inicio.html">
+            <button id="start-btn" type="button">Volver</button>
+            </a>
+        </form>
+    </div>
+    <script src="./js/select.js"></script>
+    <script src="./js/registro.js"></script>
+</body>
+</html>
