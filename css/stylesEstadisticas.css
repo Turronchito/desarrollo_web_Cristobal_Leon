@@ -1,0 +1,39 @@
+body {
+    background-image: url("../Image/Fondo.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 100vh;
+    margin: 0;
+    font-family: sans-serif;
+}
+header {
+    display: flex;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #069cf9;
+}
+div#imagen{
+    background-image: url("../Image/Aves.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    padding: 300px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    width: 600px;
+}
+button#start-btn {
+    padding: 10px;
+    background-color: #009dff7f;
+    color: #030303;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button#start-btn:hover {
+    background-color: #009dff;
+}
