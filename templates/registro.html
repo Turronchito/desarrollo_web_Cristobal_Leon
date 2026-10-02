@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registro de Aves</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/stylesRegistro.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Registro voluntario</h1>
+    </header>
+    <div class="main-container">
+        {% if exito %}
+            <div id="val-box">
+                <h2>¡Registrado exitosamente!</h2>
+                <a href="/informe?voluntario_id={{ voluntario_id }}"><button type="button">Registrar avistamiento</button></a>
+                <a href="/"><button type="button">Ir al inicio</button></a>
+            </div>
+        {% else %}
+            <div id="val-box" {% if not errores %}hidden{% endif %}>
+                <h2 id="val-msg">{% if errores %}Errores en el formulario:{% endif %}</h2>
+                <ul id="val-list">
+                    {% for error in errores %}
+                        <li style="color: red;">{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <form name="myForm" action="/registro" method="post" enctype="multipart/form-data">
+                <label for="nombre">Nombre</label>
+                <input type="text" name="nombre" id="nombre" minlength="5" required><br>
+
+                <label for="rut">Rut</label>
+                <input type="text" name="rut" id="rut" minlength="8" required><br>
+
+                <label for="email">Email</label>
+                <input type="email" name="email" id="email" minlength="10" required><br>
+
+                <label for="phone">Numero de teléfono</label>
+                <input type="text" name="phone" id="phone" minlength="8" required><br>
+
+                <label for="region-select">Región</label>
+                <select name="region-select" id="region-select" required>
+                    <option value="">Seleccione una Región</option>
+                </select><br>
+
+                <label for="comuna-select">Comuna</label>
+                <select name="comuna-select" id="comuna-select" required>
+                    <option value="">Seleccione una Comuna</option>
+                </select><br>
+                
+                <button id="submit-btn" type="button">Enviar</button>
+                <a href="/">
+                    <button id="start-btn" type="button">Volver</button>
+                </a>
+            </form>
+        {% endif %}
+    </div>
+
+    <script src="{{ url_for('static', filename='js/select.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/registro.js') }}"></script>
+</body>
+</html>

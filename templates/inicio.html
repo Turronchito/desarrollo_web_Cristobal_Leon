@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> Avistamientos de aves </title>
+        {% block css %}
+        <link 
+            rel="stylesheet" 
+            type="text/css" 
+            href="{{ url_for('static', filename='css/stylesInicio.css')}}"
+            />
+        {% endblock %}
+    </head>
+    {% block content %} 
+        <header>
+            <h1 id="titleAves"> Avistamientos de aves </h1>
+        </header>
+        <div class="buttonsContainer">
+            <a href="/registro">
+            <button>Registrar voluntario</button>
+            </a>
+            <a href="/informe">
+            <button>Informar avistamiento</button>
+            </a>
+            <a href="/listado">
+            <button>Listado de avistamientos</button>
+            </a>
+            <a href="/estadisticas">
+            <button>Estadísticas</button>
+            </a>
+
+            <h3>Últimos 2 avistamientos registrados</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Lugar</th>
+                        <th>Ave</th>
+                        <th>Voluntario</th>
+                        <th>Descripción</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla">
+                    {% for a in avistamientos %}
+                    <tr>
+                        <td>{{ a.fecha_hora.strftime('%Y-%m-%d %H:%M') if a.fecha_hora else '' }}</td>
+                        <td>{{ a.lugar }}</td>
+                        <td>{{ a.ave.nombre if a.ave else 'N/A' }}</td>
+                        <td>{{ a.voluntario.nombre if a.voluntario else 'N/A' }}</td>
+                        <td>{{ a.descripcion or '' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5">No hay avistamientos registrados aún.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    {% endblock %}
+</html>
+

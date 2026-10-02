@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registro de Aves</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/stylesInforme.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Informe de avistamientos</h1>
+    </header>
+    <div class="main-container">
+        <div id="val-box" {% if not errores %}hidden{% endif %}>
+            <h2 id="val-msg">{% if errores %}Errores en el formulario:{% endif %}</h2>
+            <ul id="val-list">
+                {% for error in errores %}
+                    <li style="color: red;">{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <form name="myForm" action="/informe" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="voluntario_id" value="{{ voluntario_id }}">
+
+            <label for="BirdName">Nombre de Ave</label>
+            <input type="text" name="BirdName" id="BirdName" minlength="4" value="{{ form_data.BirdName if form_data else '' }}" required><br>
+            
+            <label for="BirdType">Tipo de Ave</label>
+            <input type="text" name="BirdType" id="BirdType" minlength="4" value="{{ form_data.BirdType if form_data else '' }}" required><br>
+
+            <label for="place">Lugar</label>
+            <input type="text" name="place" id="place" minlength="4" value="{{ form_data.place if form_data else '' }}" required><br>
+
+            <label for="time">Fecha y Hora</label>
+            <input type="datetime-local" name="time" id="time" minlength="4" value="{{ form_data.time if form_data else '' }}" required><br>
+
+            <div id="imagenes">
+                <label for="Image">Imagen del Ave</label>
+                <div>
+                    <input type="file" name="Image" id="Image" multiple accept="image/*,.pdf" required><br>
+                    <button type="button" id="plus-btn">+</button>
+                </div>
+            </div>
+            
+            <button id="submit-btn" type="button">Enviar</button>
+            <a href="/">
+            <button id="start-btn" type="button">Volver</button>
+            </a>
+        </form>
+    </div>
+    <script src="{{ url_for('static', filename='js/informe.js') }}"></script>
+</body>
+</html>
