@@ -11,3 +11,5 @@
 - Las filas se leen de la base de datos y listado.js las ordena (5 por página).
 
 - Use los conocimientos de las clases auxiliares además de la ayuda de la IA para cosas que no entendiera e implementaciones usando conocimientos que no tenía previamente (Barreras con el lenguaje y funciones pre-hechas)
+
+- La carpeta en donde está el archivo db.py y los demás sql no pude cambiarle el nombre a database o algo parecido.
