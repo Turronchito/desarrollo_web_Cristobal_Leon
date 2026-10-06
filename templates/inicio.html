@@ -1,62 +1,42 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title> Avistamientos de aves </title>
-        {% block css %}
-        <link 
-            rel="stylesheet" 
-            type="text/css" 
-            href="{{ url_for('static', filename='css/stylesInicio.css')}}"
-            />
-        {% endblock %}
-    </head>
-    {% block content %} 
-        <header>
-            <h1 id="titleAves"> Avistamientos de aves </h1>
-        </header>
-        <div class="buttonsContainer">
-            <a href="/registro">
-            <button>Registrar voluntario</button>
-            </a>
-            <a href="/informe">
-            <button>Informar avistamiento</button>
-            </a>
-            <a href="/listado">
-            <button>Listado de avistamientos</button>
-            </a>
-            <a href="/estadisticas">
-            <button>Estadísticas</button>
-            </a>
+{% extends 'base.html' %}
+{% block title %}Avistamientos de aves{% endblock %}
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/stylesInicio.css') }}">
+{% endblock %}
 
-            <h3>Últimos 2 avistamientos registrados</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Lugar</th>
-                        <th>Ave</th>
-                        <th>Voluntario</th>
-                        <th>Descripción</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla">
-                    {% for a in avistamientos %}
-                    <tr>
-                        <td>{{ a.fecha_hora.strftime('%Y-%m-%d %H:%M') if a.fecha_hora else '' }}</td>
-                        <td>{{ a.lugar }}</td>
-                        <td>{{ a.ave.nombre if a.ave else 'N/A' }}</td>
-                        <td>{{ a.voluntario.nombre if a.voluntario else 'N/A' }}</td>
-                        <td>{{ a.descripcion or '' }}</td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5">No hay avistamientos registrados aún.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+{% block content %}
+    <header>
+        <h1 id="titleAves">Avistamientos de aves</h1>
+    </header>
+    <div class="buttonsContainer">
+        <p id="bienvenida">Aquí puedes registrarte e informar tus avistamientos de aves.</p>
+        {% if mensaje %}
+        <p id="mensaje">{{ mensaje }}</p>
+        {% endif %}
 
-        </div>
-    {% endblock %}
-</html>
+        <button type="button" onclick="window.location.href='{{ url_for('registro') }}'">Registro voluntario</button>
+        <button type="button" onclick="window.location.href='{{ url_for('informe') }}'">Informar avistamiento</button>
+        <button type="button" onclick="window.location.href='{{ url_for('listado') }}'">Listado de avistamientos</button>
+        <button type="button" onclick="window.location.href='{{ url_for('estadisticas') }}'">Estadísticas</button>
 
+        <h3>Últimos avistamientos</h3>
+        <table>
+            <thead>
+                <tr><th>Ave</th><th>Tipo</th><th>Fecha</th><th>Lugar</th><th>Voluntario</th></tr>
+            </thead>
+            <tbody id="tabla">
+                {% for avis in data %}
+                <tr>
+                    <td>{{ avis.ave }}</td>
+                    <td>{{ avis.tipo }}</td>
+                    <td>{{ avis.fecha }}</td>
+                    <td>{{ avis.lugar }}</td>
+                    <td>{{ avis.voluntario }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">Aún no hay avistamientos registrados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

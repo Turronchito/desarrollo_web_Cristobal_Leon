@@ -1,27 +1,46 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Avistamientos</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/stylesListado.css') }}">
-  <style>
-    tbody tr { cursor: pointer; }
-    tbody tr:hover { opacity: 0.85; }
-  </style>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block title %}Avistamientos{% endblock %}
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/stylesListado.css') }}">
+{% endblock %}
+
+{% block content %}
   <div class="encasillado">
     <header>
       <h2>Avistamientos</h2>
     </header>
 
+    {% if detalle %}
+    <div id="detalle">
+      <h3>Detalle del avistamiento</h3>
+      <table>
+        <tr><th>Ave</th><td>{{ detalle.ave }}</td></tr>
+        <tr><th>Tipo</th><td>{{ detalle.tipo }}</td></tr>
+        <tr><th>Fecha</th><td>{{ detalle.fecha }}</td></tr>
+        <tr><th>Lugar</th><td>{{ detalle.lugar }}</td></tr>
+        <tr><th>Voluntario</th><td>{{ detalle.voluntario }} ({{ detalle.comuna }}, {{ detalle.region }})</td></tr>
+        <tr><th>Contacto</th><td>{{ detalle.email }} | {{ detalle.telefono }}</td></tr>
+      </table>
+      <div class="galeria">
+        {% for archivo in detalle.archivos %}
+          {% if archivo.es_video %}
+          <video controls src="{{ archivo.path }}"></video>
+          {% else %}
+          <img src="{{ archivo.path }}" alt="Foto del avistamiento">
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
     <div>
       <select id="filtro">
         <option value="">Tipos</option>
-        <option value="Rapaz">Rapaz</option>
-        <option value="Passeriforme">Passeriforme</option>
+        {% for tipo in tipos %}
+        <option value="{{ tipo }}">{{ tipo }}</option>
+        {% endfor %}
       </select>
-      
+
       <select id="orden">
         <option value="time">Fecha</option>
         <option value="place">Lugar</option>
@@ -32,7 +51,16 @@
       <thead>
         <tr><th>Ave</th><th>Tipo</th><th>Fecha</th><th>Lugar</th></tr>
       </thead>
-      <tbody id="tabla"></tbody>
+      <tbody id="tabla">
+        {% for avis in data %}
+        <tr data-id="{{ avis.id }}">
+          <td>{{ avis.ave }}</td>
+          <td>{{ avis.tipo }}</td>
+          <td>{{ avis.fecha }}</td>
+          <td>{{ avis.lugar }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
     </table>
 
     <div class="paginacion">
@@ -40,15 +68,11 @@
       <span id="p-info">1</span>
       <button id="next" type="button">Siguiente</button>
     </div>
-    
-    <a href="/">
-        <button id="start-btn" type="button">Volver</button>
-    </a>
+
+    <button id="start-btn" type="button" onclick="window.location.href='{{ url_for('index') }}'">Volver</button>
   </div>
-  
-  <script>
-    const datos = {{ avistamientos_json | tojson }};
-  </script>
+{% endblock %}
+
+{% block javascript %}
   <script src="{{ url_for('static', filename='js/listado.js') }}"></script>
-</body>
-</html>
+{% endblock %}

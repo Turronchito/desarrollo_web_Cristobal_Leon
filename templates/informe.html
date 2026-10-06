@@ -1,51 +1,62 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Registro de Aves</title>
+{% extends 'base.html' %}
+{% block title %}Informe de avistamientos{% endblock %}
+{% block css %}
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/stylesInforme.css') }}">
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <header>
         <h1>Informe de avistamientos</h1>
     </header>
     <div class="main-container">
-        <div id="val-box" {% if not errores %}hidden{% endif %}>
-            <h2 id="val-msg">{% if errores %}Errores en el formulario:{% endif %}</h2>
+        {% if not voluntario %}
+        <div id="val-box">
+            <h2 id="val-msg">Debes registrarte como voluntario antes de informar un avistamiento.</h2>
+        </div>
+        <button type="button" onclick="window.location.href='{{ url_for('registro') }}'">Registrarme</button>
+        <button id="start-btn" type="button" onclick="window.location.href='{{ url_for('index') }}'">Volver</button>
+        {% else %}
+        <div id="val-box" {% if not errores %} hidden{% endif %}>
+            <h2 id="val-msg">{% if errores %}Los siguientes campos son inválidos:{% endif %}</h2>
             <ul id="val-list">
                 {% for error in errores %}
-                    <li style="color: red;">{{ error }}</li>
+                <li>{{ error }}</li>
                 {% endfor %}
             </ul>
         </div>
-        <form name="myForm" action="/informe" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="voluntario_id" value="{{ voluntario_id }}">
+        <form name="myForm" action="{{ url_for('informe') }}" method="post" enctype="multipart/form-data">
+            <label for="voluntario">Voluntario</label>
+            <input type="text" id="voluntario" value="{{ voluntario.nombre }}" readonly><br>
 
             <label for="BirdName">Nombre de Ave</label>
-            <input type="text" name="BirdName" id="BirdName" minlength="4" value="{{ form_data.BirdName if form_data else '' }}" required><br>
-            
+            <input type="text" name="BirdName" id="BirdName" minlength="4" value="{{ valores.BirdName }}" required><br>
+
             <label for="BirdType">Tipo de Ave</label>
-            <input type="text" name="BirdType" id="BirdType" minlength="4" value="{{ form_data.BirdType if form_data else '' }}" required><br>
+            <input type="text" name="BirdType" id="BirdType" minlength="4" value="{{ valores.BirdType }}" required><br>
 
             <label for="place">Lugar</label>
-            <input type="text" name="place" id="place" minlength="4" value="{{ form_data.place if form_data else '' }}" required><br>
+            <input type="text" name="place" id="place" minlength="4" value="{{ valores.place }}" required><br>
 
             <label for="time">Fecha y Hora</label>
-            <input type="datetime-local" name="time" id="time" minlength="4" value="{{ form_data.time if form_data else '' }}" required><br>
+            <input type="datetime-local" name="time" id="time" value="{{ valores.time }}" required><br>
 
             <div id="imagenes">
-                <label for="Image">Imagen del Ave</label>
-                <div>
-                    <input type="file" name="Image" id="Image" multiple accept="image/*,.pdf" required><br>
+                <label for="Image">Fotos o videos del Ave</label>
+                <div id="archivos">
+                    <input type="file" name="Image" id="Image" multiple accept="image/*,video/*" required><br>
                     <button type="button" id="plus-btn">+</button>
                 </div>
             </div>
-            
+
             <button id="submit-btn" type="button">Enviar</button>
-            <a href="/">
-            <button id="start-btn" type="button">Volver</button>
-            </a>
+            <button id="start-btn" type="button" onclick="window.location.href='{{ url_for('index') }}'">Volver</button>
         </form>
+        {% endif %}
     </div>
+{% endblock %}
+
+{% block javascript %}
+    {% if voluntario %}
     <script src="{{ url_for('static', filename='js/informe.js') }}"></script>
-</body>
-</html>
+    {% endif %}
+{% endblock %}

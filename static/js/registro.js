@@ -95,7 +95,6 @@ const validateForm = () => {
     let submitButton = document.createElement("button");
     submitButton.innerText = "Enviar";
     submitButton.style.marginRight = "10px";
-    submitButton.type = "button";
     submitButton.addEventListener("click", () => {
       myForm.submit();
     });
@@ -103,7 +102,6 @@ const validateForm = () => {
     let backButton = document.createElement("button");
     backButton.innerText = "Volver";
     backButton.style.marginRight = "10px";
-    backButton.type = "button";
     backButton.addEventListener("click", () => {
       myForm.style.display = "block";
       validationBox.hidden = true;
@@ -111,7 +109,6 @@ const validateForm = () => {
 
     let startButton = document.createElement("button");
     startButton.innerText = "Volver a inicio";
-    startButton.type = "button";
     startButton.addEventListener("click", () => {
       window.location.href = "/";
     });
@@ -125,7 +122,4 @@ const validateForm = () => {
 };
 
 let submitBtn = document.getElementById("submit-btn");
-if (submitBtn) {
-  submitBtn.type = "button";
-  submitBtn.addEventListener("click", validateForm);
-}
+submitBtn.addEventListener("click", validateForm);

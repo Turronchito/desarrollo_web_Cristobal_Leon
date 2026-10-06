@@ -1,37 +1,19 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const regionSelect = document.getElementById("region-select");
-    const comunaSelect = document.getElementById("comuna-select");
+// Las comunas vienen en el HTML (cada una con su data-region); se guardan y se
+// muestran solo las de la región elegida
+const regionSelect = document.getElementById("region-select");
+const comunaSelect = document.getElementById("comuna-select");
 
-    if (!regionSelect || !comunaSelect) return;
-    fetch('/get_regiones')
-        .then(res => res.json())
-        .then(regiones => {
-            regionSelect.innerHTML = '<option value="">Seleccione una Región</option>';
-            regiones.forEach(reg => {
-                const option = document.createElement("option");
-                option.value = reg.id;
-                option.textContent = reg.nombre;
-                regionSelect.appendChild(option);
-            });
-        })
-        .catch(err => console.error("Error al cargar regiones:", err));
+const comunas = Array.from(comunaSelect.querySelectorAll("option[data-region]"));
 
-    regionSelect.addEventListener("change", function() {
-        const regionId = parseInt(this.value, 10);
-        comunaSelect.innerHTML = '<option value="">Seleccione una Comuna</option>';
+const updateComunas = () => {
+    comunaSelect.innerHTML = '<option value="">Seleccione una Comuna</option>';
 
-        if (regionId && !isNaN(regionId)) {
-            fetch(`/get_comunas/${regionId}`)
-                .then(res => res.json())
-                .then(comunas => {
-                    comunas.forEach(comuna => {
-                        const option = document.createElement("option");
-                        option.value = comuna.id;
-                        option.textContent = comuna.nombre;
-                        comunaSelect.appendChild(option);
-                    });
-                })
-                .catch(err => console.error("Error al cargar comunas:", err));
+    comunas.forEach(comuna => {
+        if (comuna.dataset.region === regionSelect.value) {
+            comunaSelect.appendChild(comuna);
         }
     });
-});
+};
+
+regionSelect.addEventListener("change", updateComunas);
+updateComunas();

@@ -1,177 +1,166 @@
-from flask import Flask, request, render_template, redirect, url_for, flash, jsonify
-from datetime import datetime
-import os
-import uuid
+from flask import Flask, request, render_template, redirect, url_for, session
+from validations import validate_register_voluntario, validate_informe
+from tarea2 import db
 from werkzeug.utils import secure_filename
-
-from tarea2.db import (
-    SessionLocal, Avistamiento, Region, Comuna, Voluntario, Ave, Registro,
-    get_voluntary_by_email, create_voluntary
-)
+from datetime import datetime
+import hashlib
+import filetype
+import time
+import os
 
 UPLOAD_FOLDER = 'static/uploads'
 
 app = Flask(__name__)
+
 app.secret_key = "s3cr3t_k3y"
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1000 * 1000
 
-
-@app.route('/get_regiones', methods=['GET'])
-def get_regiones():
-    with SessionLocal() as session:
-        regiones = session.query(Region).order_by(Region.id).all()
-        return jsonify([{"id": r.id, "nombre": r.nombre.strip()} for r in regiones])
-
-
-@app.route('/get_comunas/<int:region_id>', methods=['GET'])
-def get_comunas(region_id):
-    with SessionLocal() as session:
-        comunas = session.query(Comuna).filter_by(region_id=region_id).order_by(Comuna.nombre).all()
-        return jsonify([{"id": c.id, "nombre": c.nombre.strip()} for c in comunas])
-
-
-@app.route('/')
-def inicio():
-    with SessionLocal() as session:
-        ultimosAvistamientos = session.query(Avistamiento)\
-            .order_by(Avistamiento.id.desc())\
-            .limit(2)\
-            .all()
-        return render_template('inicio.html', avistamientos=ultimosAvistamientos)
-
-
+@app.route("/", methods=["GET"])
+def index():
+    mensaje = session.pop("mensaje", None)
+    data = []
+    for avis in db.get_ultimos_avistamientos(page_size=2):
+        ave = db.get_ave_by_id(avis.ave_id)
+        voluntario = db.get_voluntario_by_id(avis.voluntario_id)
+        data.append({
+            "ave": ave.nombre,
+            "tipo": avis.descripcion,
+            "fecha": avis.fecha_hora.strftime("%Y-%m-%d %H:%M"),
+            "lugar": avis.lugar,
+            "voluntario": voluntario.nombre
+        })
+    return render_template("inicio.html", data=data, mensaje=mensaje)
 
 @app.route("/registro", methods=["GET", "POST"])
-@app.route("/voluntario", methods=["GET", "POST"])
-def voluntario():
+def registro():
     if request.method == "POST":
         nombre = request.form.get("nombre")
+        rut = request.form.get("rut")
         email = request.form.get("email")
-        telefono = request.form.get("phone")
-        comuna_id = request.form.get("comuna-select")
+        phone = request.form.get("phone")
+        region = request.form.get("region-select")
+        comuna = request.form.get("comuna-select")
+        errores = validate_register_voluntario(nombre, rut, email, phone, region, comuna)
+        if len(errores) == 0:
+            # try to register voluntario
+            status, msg = db.register_voluntario(nombre.strip(), email, phone, int(region), int(comuna))
+            if status:
+                session["voluntario_id"] = msg
+                session["registro_exitoso"] = True
+                return redirect(url_for("registro"))
+            errores.append(msg)
 
-        if not nombre or not email or not comuna_id or not telefono:
-            return render_template("registro.html", errores=["Todos los campos son obligatorios."])
+        return render_template("registro.html", errores=errores, valores=request.form,
+                               regiones=db.get_regiones(), comunas=db.get_comunas())
 
-        if get_voluntary_by_email(email):
-            return render_template("registro.html", errores=["El correo electrónico ya se encuentra registrado."])
+    elif request.method == "GET":
+        exito = session.pop("registro_exitoso", False)
+        return render_template("registro.html", exito=exito, valores={},
+                               regiones=db.get_regiones(), comunas=db.get_comunas())
 
-        nuevo_voluntario = create_voluntary(
-            nombre=nombre,
-            email=email,
-            telefono=telefono,
-            fecha_registro=datetime.now(),
-            comuna_id=int(comuna_id)
-        )
-
-        return render_template("registro.html", exito=True, voluntario_id=nuevo_voluntario.id)
-
-    return render_template("registro.html")
-
-
-@app.route('/informe', methods=['GET', 'POST'])
+@app.route("/informe", methods=["GET", "POST"])
 def informe():
-    if request.method == 'GET':
-        return render_template('informe.html', voluntario_id=request.args.get('voluntario_id', ''))
+    voluntario = None
+    if "voluntario_id" in session:
+        voluntario = db.get_voluntario_by_id(session["voluntario_id"])
 
-    f = request.form
-    v_id = f.get('voluntario_id')
-    b_name = f.get('BirdName', '').strip()
-    b_type = f.get('BirdType', '').strip()
-    place = f.get('place', '').strip()
-    dt_str = f.get('time', '').strip()
-    imgs = request.files.getlist('Image')
-    
-    errores = []
+    if voluntario is None:
+        return render_template("informe.html", voluntario=None)
 
-    if not v_id or v_id == 'None' or v_id == '':
-        errores.append("No se ha especificado un voluntario válido.")
+    if request.method == "POST":
+        bname = request.form.get("BirdName")
+        tipo = request.form.get("BirdType")
+        place = request.form.get("place")
+        time_str = request.form.get("time")
+        archivos = [a for a in request.files.getlist("Image") if a.filename != ""]
 
-    if len(b_name) < 4 or len(b_type) < 4 or len(place) < 4:
-        errores.append("Los campos de texto deben tener al menos 4 caracteres.")
-    
-    dt = None
-    try:
-        dt = datetime.strptime(dt_str, "%Y-%m-%dT%H:%M")
-        if dt > datetime.now():
-            errores.append("La fecha no puede ser futura.")
-    except ValueError:
-        errores.append("Formato de fecha inválido.")
+        errores = validate_informe(bname, tipo, time_str, place, archivos)
 
-    if not imgs or not imgs[0].filename:
-        errores.append("Debe incluir al menos un archivo.")
+        if len(errores) == 0:
+            ave = db.get_ave_by_nombre(bname.strip())
+            if ave is None:
+                ave_id = db.create_ave(bname.strip())
 
-    if errores:
-        return render_template('informe.html', errores=errores, form_data=f, voluntario_id=v_id)
+            else:
+                ave_id = ave.id
 
-    with SessionLocal() as session:
-        ave = session.query(Ave).filter_by(nombre=b_name).first()
-        if not ave:
-            ave = Ave(nombre=b_name)
-            session.add(ave)
-            session.flush()
+            registros = []
+            for archivo in archivos:
+                _filename = hashlib.sha256(
+                    (secure_filename(archivo.filename) + str(time.time()))
+                    .encode("utf-8")
+                    ).hexdigest()
+                _extension = filetype.guess(archivo).extension
+                filename = f"{_filename}.{_extension}"
+                archivo.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+                registros.append((f"uploads/{filename}", secure_filename(archivo.filename)))
 
-        avis = Avistamiento(
-            voluntario_id=int(v_id),
-            ave_id=ave.id,
-            fecha_hora=dt,
-            lugar=place,
-            descripcion=f"Tipo: {b_type}"
-        )
-        session.add(avis)
-        session.flush()
+            db.create_avistamiento(voluntario.id, ave_id, datetime.strptime(time_str, "%Y-%m-%dT%H:%M"),
+                                   place.strip(), tipo.strip(), registros)
 
-        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-        for img in imgs:
-            if img and img.filename:
-                orig_name = secure_filename(img.filename)
-                hash_name = f"{uuid.uuid4().hex}{os.path.splitext(orig_name)[1]}"
-                img.save(os.path.join(app.config['UPLOAD_FOLDER'], hash_name))
-                
-                session.add(Registro(
-                    avistamiento_id=avis.id,
-                    ruta_archivo=hash_name,
-                    nombre_archivo=orig_name
-                ))
+            session["mensaje"] = "¡Avistamiento registrado exitosamente!"
+            return redirect(url_for("index"))
 
-        session.commit()
-        flash("¡Avistamiento registrado exitosamente!", "success")
-        return redirect(url_for('inicio'))
+        return render_template("informe.html", errores=errores, valores=request.form,
+                               voluntario=voluntario)
 
-@app.route('/listado')
+    elif request.method == "GET":
+        return render_template("informe.html", voluntario=voluntario, valores={})
+
+@app.route("/listado", methods=["GET"])
 def listado():
-    with SessionLocal() as session:
-        avistamientos_bd = session.query(Avistamiento)\
-            .order_by(Avistamiento.fecha_hora.desc())\
-            .all()
+    data = []
+    tipos = []
+    for avis in db.get_avistamientos():
+        ave = db.get_ave_by_id(avis.ave_id)
+        data.append({
+            "id": avis.id,
+            "ave": ave.nombre,
+            "tipo": avis.descripcion,
+            "fecha": avis.fecha_hora.strftime("%Y-%m-%d %H:%M"),
+            "lugar": avis.lugar
+        })
+        if avis.descripcion not in tipos:
+            tipos.append(avis.descripcion)
 
-        lista_avistamientos = []
-        for a in avistamientos_bd:
-            
-            tipo = "Otro"
-            if a.descripcion and "Tipo:" in a.descripcion:
-                partes = a.descripcion.split("Tipo:")
-                if len(partes) > 1:
-                    tipo = partes[1].strip()
+    detalle = None
+    avis_id = request.args.get("id", "")
+    if avis_id.isdigit():
+        avis = db.get_avistamiento_by_id(int(avis_id))
+        if avis is not None:
+            ave = db.get_ave_by_id(avis.ave_id)
+            voluntario = db.get_voluntario_by_id(avis.voluntario_id)
+            comuna = db.get_comuna_by_id(voluntario.comuna_id)
+            region = db.get_region_by_id(comuna.region_id)
 
-            lista_avistamientos.append({
-                "id": a.id,
-                "bname": a.ave.nombre if a.ave else "Desconocida",
-                "tipo": tipo,
-                "time": a.fecha_hora.strftime('%Y-%m-%d %H:%M') if a.fecha_hora else "",
-                "place": a.lugar
-            })
+            archivos = []
+            for registro in db.get_registros_by_avistamiento(avis.id):
+                es_video = registro.ruta_archivo.endswith((".mp4", ".webm"))
+                archivos.append({
+                    "path": url_for("static", filename=registro.ruta_archivo),
+                    "es_video": es_video
+                })
 
-        return render_template('listado.html', avistamientos_json=lista_avistamientos)
+            detalle = {
+                "ave": ave.nombre,
+                "tipo": avis.descripcion,
+                "fecha": avis.fecha_hora.strftime("%Y-%m-%d %H:%M"),
+                "lugar": avis.lugar,
+                "voluntario": voluntario.nombre,
+                "email": voluntario.email,
+                "telefono": voluntario.telefono,
+                "comuna": comuna.nombre.strip(),
+                "region": region.nombre.strip(),
+                "archivos": archivos
+            }
 
+    return render_template("listado.html", data=data, tipos=tipos, detalle=detalle)
 
-@app.route('/avistamiento/<int:id>')
-def detalle_avistamiento(id):
-    with SessionLocal() as session:
-        avistamiento_obj = session.query(Avistamiento).filter_by(id=id).first()
-        if not avistamiento_obj:
-            return "Avistamiento no encontrado", 404
-        return render_template('detalleAvistamiento.html', avistamiento=avistamiento_obj)
+@app.route("/estadisticas", methods=["GET"])
+def estadisticas():
+    return render_template("estadisticas.html")
+
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True)

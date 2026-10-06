@@ -1,15 +1,15 @@
 const validateName = (name) => {
   if (!name) return false;
-  return name.trim().length >= 4;
+  return name.trim().length >= 5;
 };
 
 const validateFiles = (files) => {
-  if (!files || files.length === 0) return false;
+  if (!files || files.length === 0 || files.length > 5) return false;
   let typeValid = true;
 
   for (const file of files) {
     let fileFamily = file.type.split("/")[0];
-    typeValid &&= fileFamily === "image" || file.type === "application/pdf";
+    typeValid &&= fileFamily === "image" || fileFamily === "video";
   }
   return typeValid;
 };
@@ -23,7 +23,11 @@ const validateDate = (dateString) => {
 
 const validateForm = () => {
   let myForm = document.forms["myForm"];
-  let files = myForm["Image"].files;
+  // el botón + puede agregar más campos de archivo: se juntan todos
+  let files = [];
+  for (const input of document.querySelectorAll('input[name="Image"]')) {
+    for (const file of input.files) files.push(file);
+  }
   let bname = myForm["BirdName"].value;
   let tipo = myForm["BirdType"].value;
   let time = myForm["time"].value;
@@ -60,6 +64,7 @@ const validateForm = () => {
   if (!isValid) {
     validationListElem.textContent = "";
     
+    // CORREGIDO: Agregado 'let' antes de 'input'
     for (let input of invalidInputs) { 
       let listElement = document.createElement("li");
       listElement.innerText = input;
@@ -105,6 +110,14 @@ const validateForm = () => {
 };
 
 let submitBtn = document.getElementById("submit-btn");
-if (submitBtn) {
-  submitBtn.addEventListener("click", validateForm);
-}
+submitBtn.addEventListener("click", validateForm);
+
+// el botón + agrega otro campo para adjuntar más archivos
+document.getElementById("plus-btn").addEventListener("click", () => {
+  let input = document.createElement("input");
+  input.type = "file";
+  input.name = "Image";
+  input.multiple = true;
+  input.accept = "image/*,video/*";
+  document.getElementById("archivos").insertBefore(input, document.getElementById("plus-btn"));
+});

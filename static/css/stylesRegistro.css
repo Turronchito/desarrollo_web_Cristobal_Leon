@@ -39,10 +39,8 @@ header {
 }
 
 input[type="email"],
-input[type="name"],
 input[type="text"],
-input[type="rut"],
-input[type="phone"],
+input[type="tel"],
 select {
     padding: 5px;
     margin-bottom: 5px;

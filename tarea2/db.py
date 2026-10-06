@@ -1,5 +1,6 @@
-from sqlalchemy import create_engine, Column, Integer, BigInteger, String, ForeignKey, DateTime, Text
+from sqlalchemy import create_engine, Column, Integer, BigInteger, String, Text, DateTime, ForeignKey
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
+from datetime import datetime
 
 DB_NAME = "tarea2"
 DB_USERNAME = "cc5002"
@@ -10,9 +11,11 @@ DB_PORT = 3306
 DATABASE_URL = f"mysql+pymysql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 engine = create_engine(DATABASE_URL, echo=False, future=True)
-SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+SessionLocal = sessionmaker(bind=engine)
 
 Base = declarative_base()
+
+# --- Models ---
 
 class Region(Base):
     __tablename__ = 'region'
@@ -20,17 +23,12 @@ class Region(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     nombre = Column(String(200), nullable=False)
 
-    comunas = relationship("Comuna", back_populates="region")
-
 class Comuna(Base):
     __tablename__ = 'comuna'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     nombre = Column(String(200), nullable=False)
     region_id = Column(Integer, ForeignKey('region.id'), nullable=False)
-
-    region = relationship("Region", back_populates="comunas")
-    voluntarios = relationship("Voluntario", back_populates="comuna")
 
 class Voluntario(Base):
     __tablename__ = 'voluntario'
@@ -42,16 +40,11 @@ class Voluntario(Base):
     fecha_registro = Column(DateTime, nullable=False)
     comuna_id = Column(Integer, ForeignKey('comuna.id'), nullable=False)
 
-    comuna = relationship("Comuna", back_populates="voluntarios")
-    avistamientos = relationship("Avistamiento", back_populates="voluntario")
-
 class Ave(Base):
     __tablename__ = 'ave'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     nombre = Column(String(80), nullable=False)
-
-    avistamientos = relationship("Avistamiento", back_populates="ave")
 
 class Avistamiento(Base):
     __tablename__ = 'avistamiento'
@@ -61,11 +54,9 @@ class Avistamiento(Base):
     ave_id = Column(Integer, ForeignKey('ave.id'), nullable=False)
     fecha_hora = Column(DateTime, nullable=False)
     lugar = Column(String(200), nullable=False)
-    descripcion = Column(Text(500), nullable=True)
+    descripcion = Column(Text, nullable=True)
 
-    voluntario = relationship("Voluntario", back_populates="avistamientos")
-    ave = relationship("Ave", back_populates="avistamientos")
-    registros = relationship("Registro", back_populates="avistamiento")
+    registros = relationship("Registro", back_populates="avistamiento", cascade="all, delete")
 
 class Registro(Base):
     __tablename__ = 'registro'
@@ -77,67 +68,117 @@ class Registro(Base):
 
     avistamiento = relationship("Avistamiento", back_populates="registros")
 
+# --- Database Functions ---
 
-def get_voluntary_by_id(id):
-    with SessionLocal() as session:
-        return session.query(Voluntario).filter_by(id=id).first()
+def get_regiones():
+    session = SessionLocal()
+    regiones = session.query(Region).order_by(Region.id).all()
+    session.close()
+    return regiones
 
-def get_voluntary_by_email(email):
-    with SessionLocal() as session:
-        return session.query(Voluntario).filter_by(email=email).first()
+def get_comunas():
+    session = SessionLocal()
+    comunas = session.query(Comuna).order_by(Comuna.nombre).all()
+    session.close()
+    return comunas
 
-def get_voluntary_by_name(nombre):
-    with SessionLocal() as session:
-        return session.query(Voluntario).filter_by(nombre=nombre).first()
+def get_comuna_by_id(id):
+    session = SessionLocal()
+    comuna = session.query(Comuna).filter_by(id=id).first()
+    session.close()
+    return comuna
 
-def create_voluntary(nombre, email, telefono, fecha_registro, comuna_id):   
-    with SessionLocal() as session:
-        try:
-            new_voluntary = Voluntario(
-                nombre=nombre, 
-                email=email, 
-                telefono=telefono, 
-                fecha_registro=fecha_registro, 
-                comuna_id=comuna_id
-            )
-            session.add(new_voluntary)
-            session.commit()
-            session.refresh(new_voluntary)
-            return new_voluntary
-        except Exception as e:
-            session.rollback()
-            raise e
+def get_region_by_id(id):
+    session = SessionLocal()
+    region = session.query(Region).filter_by(id=id).first()
+    session.close()
+    return region
 
-def create_register(ruta_archivo, nombre_archivo, avistamiento_id):
-    with SessionLocal() as session:
-        try:
-            new_register = Registro(
-                ruta_archivo=ruta_archivo, 
-                nombre_archivo=nombre_archivo, 
-                avistamiento_id=avistamiento_id
-            )
-            session.add(new_register)
-            session.commit()
-            session.refresh(new_register)
-            return new_register
-        except Exception as e:
-            session.rollback()
-            raise e
+def get_voluntario_by_id(id):
+    session = SessionLocal()
+    voluntario = session.query(Voluntario).filter_by(id=id).first()
+    session.close()
+    return voluntario
 
-def create_avistamient(voluntario_id, ave_id, fecha_hora, lugar, descripcion):
-    with SessionLocal() as session:
-        try:
-            nuevo = Avistamiento(
-                voluntario_id=voluntario_id,
-                ave_id=ave_id,
-                fecha_hora=fecha_hora,
-                lugar=lugar,
-                descripcion=descripcion
-            )
-            session.add(nuevo)
-            session.commit()
-            session.refresh(nuevo) 
-            return nuevo
-        except Exception as e:
-            session.rollback()
-            raise e
+def get_voluntario_by_email(email):
+    session = SessionLocal()
+    voluntario = session.query(Voluntario).filter_by(email=email).first()
+    session.close()
+    return voluntario
+
+def create_voluntario(nombre, email, telefono, comuna_id):
+    session = SessionLocal()
+    new_voluntario = Voluntario(nombre=nombre, email=email, telefono=telefono,
+                                fecha_registro=datetime.now(), comuna_id=comuna_id)
+    session.add(new_voluntario)
+    session.commit()
+    voluntario_id = new_voluntario.id
+    session.close()
+    return voluntario_id
+
+def register_voluntario(nombre, email, telefono, region_id, comuna_id):
+    comuna = get_comuna_by_id(comuna_id)
+    if comuna is None or comuna.region_id != region_id:
+        return False, "La comuna no pertenece a la región seleccionada."
+
+    if get_voluntario_by_email(email) is not None:
+        return False, "El correo electrónico ya se encuentra registrado."
+
+    voluntario_id = create_voluntario(nombre, email, telefono, comuna_id)
+    return True, voluntario_id
+
+def get_ave_by_id(id):
+    session = SessionLocal()
+    ave = session.query(Ave).filter_by(id=id).first()
+    session.close()
+    return ave
+
+def get_ave_by_nombre(nombre):
+    session = SessionLocal()
+    ave = session.query(Ave).filter_by(nombre=nombre).first()
+    session.close()
+    return ave
+
+def create_ave(nombre):
+    session = SessionLocal()
+    new_ave = Ave(nombre=nombre)
+    session.add(new_ave)
+    session.commit()
+    ave_id = new_ave.id
+    session.close()
+    return ave_id
+
+def get_avistamientos():
+    session = SessionLocal()
+    avistamientos = session.query(Avistamiento).order_by(Avistamiento.fecha_hora.desc()).all()
+    session.close()
+    return avistamientos
+
+def get_ultimos_avistamientos(page_size):
+    session = SessionLocal()
+    avistamientos = session.query(Avistamiento).order_by(Avistamiento.id.desc()).limit(page_size).all()
+    session.close()
+    return avistamientos
+
+def get_avistamiento_by_id(id):
+    session = SessionLocal()
+    avistamiento = session.query(Avistamiento).filter_by(id=id).first()
+    session.close()
+    return avistamiento
+
+def get_registros_by_avistamiento(avistamiento_id):
+    session = SessionLocal()
+    registros = session.query(Registro).filter_by(avistamiento_id=avistamiento_id).order_by(Registro.id).all()
+    session.close()
+    return registros
+
+def create_avistamiento(voluntario_id, ave_id, fecha_hora, lugar, descripcion, archivos):
+    # archivos: lista de (ruta_archivo, nombre_archivo); se crea un registro por cada archivo
+    session = SessionLocal()
+    new_avistamiento = Avistamiento(voluntario_id=voluntario_id, ave_id=ave_id,
+                                    fecha_hora=fecha_hora, lugar=lugar, descripcion=descripcion)
+    for ruta_archivo, nombre_archivo in archivos:
+        new_avistamiento.registros.append(Registro(ruta_archivo=ruta_archivo, nombre_archivo=nombre_archivo))
+    session.add(new_avistamiento)
+    session.commit()
+    session.close()

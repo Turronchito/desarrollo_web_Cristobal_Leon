@@ -3,7 +3,9 @@ body {
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
-    height: 100vh;
+    min-height: 100vh;
+    padding-top: 70px;
+    box-sizing: border-box;
     margin: 0;
     font-family: sans-serif;
     display: flex;
@@ -73,4 +75,20 @@ td {
     border: 2px solid #009dff;
     background-color: #009dff7f;
     color: #030303;
+}
+
+tbody tr {
+    cursor: pointer;
+}
+
+tbody tr:hover {
+    opacity: 0.85;
+}
+
+.galeria img,
+.galeria video {
+    max-width: 200px;
+    max-height: 150px;
+    border: 2px solid #009dff;
+    margin: 5px;
 }

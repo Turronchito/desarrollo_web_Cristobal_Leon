@@ -1,61 +1,68 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Registro de Aves</title>
+{% extends 'base.html' %}
+{% block title %}Registro de voluntario{% endblock %}
+{% block css %}
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/stylesRegistro.css') }}">
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <header>
         <h1>Registro voluntario</h1>
     </header>
     <div class="main-container">
         {% if exito %}
-            <div id="val-box">
-                <h2>¡Registrado exitosamente!</h2>
-                <a href="/informe?voluntario_id={{ voluntario_id }}"><button type="button">Registrar avistamiento</button></a>
-                <a href="/"><button type="button">Ir al inicio</button></a>
-            </div>
+        <div id="val-box">
+            <h2 id="val-msg">¡Registrado!</h2>
+            <button type="button" onclick="window.location.href='{{ url_for('informe') }}'">Informar avistamiento</button>
+            <button type="button" onclick="window.location.href='{{ url_for('index') }}'">Ir al inicio</button>
+        </div>
         {% else %}
-            <div id="val-box" {% if not errores %}hidden{% endif %}>
-                <h2 id="val-msg">{% if errores %}Errores en el formulario:{% endif %}</h2>
-                <ul id="val-list">
-                    {% for error in errores %}
-                        <li style="color: red;">{{ error }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            <form name="myForm" action="/registro" method="post" enctype="multipart/form-data">
-                <label for="nombre">Nombre</label>
-                <input type="text" name="nombre" id="nombre" minlength="5" required><br>
+        <div id="val-box" {% if not errores %} hidden{% endif %}>
+            <h2 id="val-msg">{% if errores %}Los siguientes campos son inválidos:{% endif %}</h2>
+            <ul id="val-list">
+                {% for error in errores %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <form name="myForm" action="{{ url_for('registro') }}" method="post" enctype="multipart/form-data">
+            <label for="nombre">Nombre</label>
+            <input type="text" name="nombre" id="nombre" minlength="5" value="{{ valores.nombre }}" required><br>
 
-                <label for="rut">Rut</label>
-                <input type="text" name="rut" id="rut" minlength="8" required><br>
+            <label for="rut">Rut</label>
+            <input type="text" name="rut" id="rut" minlength="8" value="{{ valores.rut }}" required><br>
 
-                <label for="email">Email</label>
-                <input type="email" name="email" id="email" minlength="10" required><br>
+            <label for="email">Email</label>
+            <input type="email" name="email" id="email" minlength="10" value="{{ valores.email }}" required><br>
 
-                <label for="phone">Numero de teléfono</label>
-                <input type="text" name="phone" id="phone" minlength="8" required><br>
+            <label for="phone">Numero de teléfono</label>
+            <input type="tel" name="phone" id="phone" minlength="8" value="{{ valores.phone }}" required><br>
 
-                <label for="region-select">Región</label>
-                <select name="region-select" id="region-select" required>
-                    <option value="">Seleccione una Región</option>
-                </select><br>
+            <label for="region-select">Región</label>
+            <select name="region-select" id="region-select" required>
+                <option value="">Seleccione una Región</option>
+                {% for region in regiones %}
+                <option value="{{ region.id }}">{{ region.nombre.strip() }}</option>
+                {% endfor %}
+            </select><br>
 
-                <label for="comuna-select">Comuna</label>
-                <select name="comuna-select" id="comuna-select" required>
-                    <option value="">Seleccione una Comuna</option>
-                </select><br>
-                
-                <button id="submit-btn" type="button">Enviar</button>
-                <a href="/">
-                    <button id="start-btn" type="button">Volver</button>
-                </a>
-            </form>
+            <label for="comuna-select">Comuna</label>
+            <select name="comuna-select" id="comuna-select" required>
+                <option value="">Seleccione una Comuna</option>
+                {% for comuna in comunas %}
+                <option value="{{ comuna.id }}" data-region="{{ comuna.region_id }}">{{ comuna.nombre.strip() }}</option>
+                {% endfor %}
+            </select><br>
+
+            <button id="submit-btn" type="button">Enviar</button>
+            <button id="start-btn" type="button" onclick="window.location.href='{{ url_for('index') }}'">Volver</button>
+        </form>
         {% endif %}
     </div>
+{% endblock %}
 
+{% block javascript %}
+    {% if not exito %}
     <script src="{{ url_for('static', filename='js/select.js') }}"></script>
     <script src="{{ url_for('static', filename='js/registro.js') }}"></script>
-</body>
-</html>
+    {% endif %}
+{% endblock %}
