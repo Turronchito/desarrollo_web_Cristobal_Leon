@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Estadísticas de aves{% endblock %}
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/stylesEstadisticas.css') }}">
+{% endblock %}
+
+{% block content %}
+    <header>
+        <h1 id="titleAves">Estadisticas de Aves</h1>
+    </header>
+    <div class="grafico" id="grafico-dia"></div>
+    <div class="grafico" id="grafico-tipo"></div>
+    <div class="grafico" id="grafico-comuna"></div>
+    <div class="volver">
+        <a id="start-btn" href="{{ url_for('index') }}">Volver a la portada</a>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script src="{{ url_for('static', filename='js/highcharts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/estadisticas.js') }}"></script>
+{% endblock %}

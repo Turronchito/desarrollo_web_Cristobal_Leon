@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Avistamientos de aves{% endblock %}
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/stylesInicio.css') }}">
+{% endblock %}
+
+{% block content %}
+    <header>
+        <h1 id="titleAves">Avistamientos de aves</h1>
+    </header>
+    <div class="buttonsContainer">
+        <p id="bienvenida">¡Bienvenido! Aquí puedes registrarte e informar tus avistamientos de aves.</p>
+        {% if mensaje %}
+        <p id="mensaje">{{ mensaje }}</p>
+        {% endif %}
+
+        <button type="button" onclick="window.location.href='{{ url_for('registro') }}'">Registro voluntario</button>
+        <button type="button" onclick="window.location.href='{{ url_for('informe') }}'">Informar avistamiento</button>
+        <button type="button" onclick="window.location.href='{{ url_for('listado') }}'">Listado de avistamientos</button>
+        <button type="button" onclick="window.location.href='{{ url_for('estadisticas') }}'">Estadísticas</button>
+
+        <h3>Últimos avistamientos</h3>
+        <table>
+            <thead>
+                <tr><th>Ave</th><th>Tipo</th><th>Fecha</th><th>Lugar</th><th>Voluntario</th></tr>
+            </thead>
+            <tbody id="tabla">
+                {% for aves in data %}
+                <tr>
+                    <td>{{ aves.ave }}</td>
+                    <td>{{ aves.tipo }}</td>
+                    <td>{{ aves.fecha }}</td>
+                    <td>{{ aves.lugar }}</td>
+                    <td>{{ aves.voluntario }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5">Aún no hay avistamientos registrados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
