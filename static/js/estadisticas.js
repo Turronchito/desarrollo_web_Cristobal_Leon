@@ -1,6 +1,5 @@
 Highcharts.setOptions({ accessibility: { enabled: false } });
 
-// los textos que vienen de la base de datos se escapan antes de dárselos a Highcharts
 const limpiar = (texto) => String(texto).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 const getChart = (id) => Highcharts.charts.find((chart) => chart && chart.renderTo.id === id);
@@ -11,7 +10,6 @@ const sinDatos = (id, titulo) => {
   document.getElementById(id).append(mensaje);
 };
 
-// --- 1. Gráfico de líneas: avistamientos por día ---
 Highcharts.chart('grafico-dia', {
   chart: {
     type: 'line'
@@ -49,7 +47,6 @@ fetch(`${window.origin}/get-stats-dia`)
       return;
     }
 
-    // Get the chart by ID and update it with the data of the database
     getChart('grafico-dia').update({
       xAxis: {
         categories: data.map((item) => item.date.split('-').reverse().join('-'))
@@ -61,7 +58,6 @@ fetch(`${window.origin}/get-stats-dia`)
   })
   .catch((error) => console.error('Error:', error));
 
-// --- 2. Gráfico de torta: avistamientos por tipo de ave ---
 Highcharts.chart('grafico-tipo', {
   chart: {
     type: 'pie'
@@ -106,7 +102,6 @@ fetch(`${window.origin}/get-stats-tipo`)
   })
   .catch((error) => console.error('Error:', error));
 
-// --- 3. Gráfico de barras: voluntarios por comuna ---
 Highcharts.chart('grafico-comuna', {
   chart: {
     type: 'column'

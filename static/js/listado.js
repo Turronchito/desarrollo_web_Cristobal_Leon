@@ -1,4 +1,3 @@
-// las filas llegan desde la base de datos (escritas en el HTML por Flask); se leen como "datos"
 const datos = Array.from(document.querySelectorAll("#tabla tr")).map(fila => ({
   id: fila.dataset.id,
   bname: fila.cells[0].textContent,
@@ -21,7 +20,6 @@ function render() {
   if (pag > maxPag) pag = maxPag;
   const items = lista.slice((pag - 1) * porPag, pag * porPag);
 
-  // las filas se arman con textContent (no innerHTML) para que un texto con HTML no se ejecute
   const tabla = document.getElementById("tabla");
   tabla.textContent = "";
   for (const d of items) {
@@ -31,7 +29,6 @@ function render() {
       celda.textContent = texto;
       fila.appendChild(celda);
     }
-    // clic sobre una fila: ver el detalle del avistamiento
     fila.onclick = () => { window.location.href = "/listado?id=" + d.id; };
     tabla.appendChild(fila);
   }

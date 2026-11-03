@@ -16,12 +16,11 @@ const validadorComentario = (nombre, texto) => {
   return { errores: errores, isValid: errores.length === 0 };
 };
 
-// muestra los campos inválidos (si no hay errores, esconde el cuadro)
+
 const populateErrores = (errores) => {
   let cajaErrores = document.getElementById("comentario-errores");
   let listaErrores = document.getElementById("comentario-lista-errores");
 
-  // delete previous childs
   while (listaErrores.firstChild) {
     listaErrores.removeChild(listaErrores.firstChild);
   }
@@ -37,7 +36,6 @@ const populateErrores = (errores) => {
 const populateComentarios = (comentarios) => {
   let lista = document.getElementById("lista-comentarios");
 
-  // delete previous childs
   while (lista.firstChild) {
     lista.removeChild(lista.firstChild);
   }
@@ -103,7 +101,7 @@ const agregarComentario = () => {
       "Content-Type": "application/json",
     },
   })
-    .then((response) => response.json()) // si hay errores de validación también viene un json (status 400)
+    .then((response) => response.json())
     .then((ajaxResponse) => {
       if (ajaxResponse["status"] === "error") {
         populateErrores(ajaxResponse["data"]);

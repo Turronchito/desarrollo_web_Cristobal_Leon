@@ -23,7 +23,6 @@ const validateDate = (dateString) => {
 
 const validateForm = () => {
   let myForm = document.forms["myForm"];
-  // el botón + puede agregar más campos de archivo: se juntan todos
   let files = [];
   for (const input of document.querySelectorAll('input[name="Image"]')) {
     for (const file of input.files) files.push(file);
@@ -63,8 +62,7 @@ const validateForm = () => {
 
   if (!isValid) {
     validationListElem.textContent = "";
-    
-    // CORREGIDO: Agregado 'let' antes de 'input'
+
     for (let input of invalidInputs) { 
       let listElement = document.createElement("li");
       listElement.innerText = input;
@@ -112,7 +110,6 @@ const validateForm = () => {
 let submitBtn = document.getElementById("submit-btn");
 submitBtn.addEventListener("click", validateForm);
 
-// el botón + agrega otro campo para adjuntar más archivos
 document.getElementById("plus-btn").addEventListener("click", () => {
   let input = document.createElement("input");
   input.type = "file";
