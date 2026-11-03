@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Avistamientos{% endblock %}
+{% block css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/stylesListado.css') }}">
+{% endblock %}
+
+{% block content %}
+  <div class="encasillado">
+    <header>
+      <h2>Avistamientos</h2>
+    </header>
+
+    {% if detalle %}
+    <div id="detalle" data-id="{{ detalle.id }}">
+      <h3>Detalle del avistamiento</h3>
+      <table>
+        <tr><th>Ave</th><td>{{ detalle.ave }}</td></tr>
+        <tr><th>Tipo</th><td>{{ detalle.tipo }}</td></tr>
+        <tr><th>Fecha</th><td>{{ detalle.fecha }}</td></tr>
+        <tr><th>Lugar</th><td>{{ detalle.lugar }}</td></tr>
+        <tr><th>Voluntario</th><td>{{ detalle.voluntario }} ({{ detalle.comuna }}, {{ detalle.region }})</td></tr>
+        <tr><th>Contacto</th><td>{{ detalle.email }} | {{ detalle.telefono }}</td></tr>
+      </table>
+      <div class="galeria">
+        {% for archivo in detalle.archivos %}
+          {% if archivo.es_video %}
+          <video controls src="{{ archivo.path }}"></video>
+          {% else %}
+          <img src="{{ archivo.path }}" alt="Foto del avistamiento">
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <div id="comentarios">
+        <h3>Comentarios</h3>
+        <ul id="lista-comentarios"></ul>
+
+        <div id="comentario-errores" hidden>
+          <h4>Los siguientes campos son inválidos:</h4>
+          <ul id="comentario-lista-errores"></ul>
+        </div>
+
+        <form id="form-comentario">
+          <label for="nombre-comentario">Nombre</label>
+          <input type="text" name="nombre" id="nombre-comentario" minlength="3" maxlength="50" required><br>
+
+          <label for="texto-comentario">Comentario</label>
+          <textarea name="texto" id="texto-comentario" rows="3" cols="40" minlength="5" maxlength="300" required></textarea><br>
+
+          <button type="button" id="comentario-btn">Agregar comentario</button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
+    <div>
+      <select id="filtro">
+        <option value="">Tipos</option>
+        {% for tipo in tipos %}
+        <option value="{{ tipo }}">{{ tipo }}</option>
+        {% endfor %}
+      </select>
+
+      <select id="orden">
+        <option value="time">Fecha</option>
+        <option value="place">Lugar</option>
+      </select>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>Ave</th><th>Tipo</th><th>Fecha</th><th>Lugar</th></tr>
+      </thead>
+      <tbody id="tabla">
+        {% for aves in data %}
+        <tr data-id="{{ aves.id }}">
+          <td>{{ aves.ave }}</td>
+          <td>{{ aves.tipo }}</td>
+          <td>{{ aves.fecha }}</td>
+          <td>{{ aves.lugar }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="paginacion">
+      <button id="prev" type="button">Anterior</button>
+      <span id="p-info">1</span>
+      <button id="next" type="button">Siguiente</button>
+    </div>
+
+    <button id="start-btn" type="button" onclick="window.location.href='{{ url_for('index') }}'">Volver</button>
+  </div>
+{% endblock %}
+
+{% block javascript %}
+  <script src="{{ url_for('static', filename='js/listado.js') }}"></script>
+  {% if detalle %}
+  <script src="{{ url_for('static', filename='js/comentarios.js') }}"></script>
+  {% endif %}
+{% endblock %}
